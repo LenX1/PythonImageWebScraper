@@ -1,0 +1,55 @@
+
+
+import requests
+from bs4 import BeautifulSoup
+import time
+import img2pdf
+from PIL import Image
+import os
+from PyPDF2 import PdfMerger
+
+
+url = "InsertURLhere"
+
+delay = 1
+
+htmldata = requests.get(url).text
+soup = BeautifulSoup(htmldata, 'html.parser')
+
+merger = PdfMerger()
+
+i = 1
+for image_url in soup.find_all('img'):
+
+    file_type = ((image_url['src']).split('/'))[-1].split('.')[-1]
+
+    if(file_type == 'svg'):
+        print(f"SKIP {i}/{len(soup.find_all('img'))} : {image_url['src']}")
+        i += 1
+        continue
+
+    print(f"{i}/{len(soup.find_all('img'))} : {image_url['src']}")
+    with open(f'{i}.{file_type}', 'wb') as handler:
+        handler.write(requests.get(image_url['src']).content)
+
+    time.sleep(delay)
+
+    image = Image.open(f"{i}.{file_type}")
+    pdf_bytes = img2pdf.convert(image.filename)
+    file = open(f"{i}.pdf", "wb")
+    file.write(pdf_bytes)
+    image.close()
+    file.close()
+
+    time.sleep(delay)
+
+    merger.append(f"{i}.pdf")
+
+    os.remove(f"{i}.{file_type}")
+    os.remove(f"{i}.pdf")
+    i += 1
+
+merger.write("result.pdf")
+merger.close()
+
+
