@@ -1,0 +1,23 @@
+
+import requests
+from bs4 import BeautifulSoup
+from datetime import datetime
+import time
+
+url = "InsertURLhere"
+
+filename = "image"
+
+delay = 1
+
+htmldata = requests.get(url).text
+soup = BeautifulSoup(htmldata, 'html.parser')
+
+i = 1
+for image_url in soup.find_all('img'):
+    print(f"{i}/{len(soup.find_all('img'))} : {image_url['src']}")
+    date_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    with open(f'{date_time}_{filename}', 'wb') as handler:
+        handler.write(requests.get(image_url['src']).content)
+    time.sleep(delay)
+    i += 1
