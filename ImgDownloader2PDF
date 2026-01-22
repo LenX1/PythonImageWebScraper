@@ -1,0 +1,43 @@
+
+import requests
+from bs4 import BeautifulSoup
+from datetime import datetime
+import time
+import img2pdf
+from PIL import Image
+import os
+
+url = "InsertURLhere"
+
+delay = 1
+
+htmldata = requests.get(url).text
+soup = BeautifulSoup(htmldata, 'html.parser')
+
+i = 1
+for image_url in soup.find_all('img'):
+
+    file_type = ((image_url['src']).split('/'))[-1].split('.')[-1]
+
+    if(file_type == 'svg'):
+        continue
+
+    print(f"{i}/{len(soup.find_all('img'))} : {image_url['src']}")
+    date_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    with open(f'{i}.{file_type}', 'wb') as handler:
+        handler.write(requests.get(image_url['src']).content)
+
+    time.sleep(delay)
+
+    image = Image.open(f"{i}.{file_type}")
+    pdf_bytes = img2pdf.convert(image.filename)
+    file = open(f"{i}.pdf", "wb")
+    file.write(pdf_bytes)
+    image.close()
+    file.close()
+
+    os.remove(f"{i}.{file_type}")
+    i += 1
+
+
+
