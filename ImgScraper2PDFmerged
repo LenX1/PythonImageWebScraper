@@ -3,6 +3,7 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+from datetime import datetime
 import img2pdf
 from PIL import Image
 import os
@@ -49,7 +50,8 @@ for image_url in soup.find_all('img'):
     os.remove(f"{i}.pdf")
     i += 1
 
-merger.write("result.pdf")
+date_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+merger.write(f"{date_time}_result.pdf")
 merger.close()
 
 
